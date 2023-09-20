@@ -131,6 +131,12 @@ module sm_control
 
             { `C_BEQ,   `F_ANY  } : begin branch = 1'b1; condZero = 1'b1; aluControl = `ALU_SUBU; end
             { `C_BNE,   `F_ANY  } : begin branch = 1'b1; aluControl = `ALU_SUBU; end
+
+            //custom commands
+            { `C_REGIMM, `F_ANY  } : begin branch = 1'b1; condZero = 1'b1; aluControl = `ALU_SLT;  end
+            { `C_SLTIU,  `F_ANY  } : begin aluSrc = 1'b1; regWrite = 1'b1; aluControl = `ALU_SLTU; end
+            { `C_XORI,   `F_ANY  } : begin aluSrc = 1'b1; regWrite = 1'b1; aluControl = `ALU_XOR;  end
+            { `C_SPEC,   `F_SLLV } : begin regDst = 1'b1; regWrite = 1'b1; aluControl = `ALU_SLLV; end
         endcase
     end
 endmodule
@@ -145,6 +151,8 @@ module sm_alu
     output        zero,
     output reg [31:0] result
 );
+    wire signed [31:0] s_srcA = srcA;
+    wire signed [31:0] s_srcB = srcB;
     always @ (*) begin
         case (oper)
             default   : result = srcA + srcB;
@@ -154,6 +162,10 @@ module sm_alu
             `ALU_SRL  : result = srcB >> shift;
             `ALU_SLTU : result = (srcA < srcB) ? 1 : 0;
             `ALU_SUBU : result = srcA - srcB;
+            //custom commands
+            `ALU_SLT  : result = (s_srcA < s_srcB) ? 1 : 0;
+            `ALU_XOR  : result = srcA ^ srcB;
+            `ALU_SLLV : result = srcB << srcA;
         endcase
     end
 
