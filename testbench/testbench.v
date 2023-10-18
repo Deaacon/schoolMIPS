@@ -26,7 +26,11 @@ module sm_testbench;
     wire                        alsSCK;     // Light Sensor SPI clock
     wire                        alsSDO;     // Light Sensor SPI data
 
-    assign gpioInput = 16'h0A;
+    wire [7:0] dbgIn;
+    wire [7:0] dbgOut;
+
+    assign gpioInput = 16'h011A;
+    assign dbgIn = 8'b00001001;
 
     // ***** DUT start ************************
 
@@ -45,7 +49,10 @@ module sm_testbench;
         .pwmOutput  ( pwmOutput  ),
         .alsCS      ( alsCS      ),
         .alsSCK     ( alsSCK     ),
-        .alsSDO     ( alsSDO     )
+        .alsSDO     ( alsSDO     ),
+
+        .dbgIn (dbgIn),
+        .dbgOut (dbgOut)
     );
 
     defparam sm_top.sm_clk_divider.bypass = 1;
@@ -127,6 +134,9 @@ module sm_testbench;
 
                 { `C_BEQ,   `F_ANY  } : $write ("beq   $%1d, $%1d, %1d", cmdRs, cmdRt, cmdImmS + 1);
                 { `C_BNE,   `F_ANY  } : $write ("bne   $%1d, $%1d, %1d", cmdRs, cmdRt, cmdImmS + 1);
+
+                { `C_LDBG,  `F_ANY  } : $write ("ldbg  $%1d", cmdRt);
+                { `C_SDBG,  `F_ANY  } : $write ("sdbg  $%1d", cmdRs);
             endcase
         end
 

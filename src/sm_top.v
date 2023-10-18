@@ -17,7 +17,10 @@ module sm_top
     output                            pwmOutput,  // PWM output pin
     output                            alsCS,      // Ligth Sensor chip select
     output                            alsSCK,     // Light Sensor SPI clock
-    input                             alsSDO      // Light Sensor SPI data
+    input                             alsSDO,     // Light Sensor SPI data
+
+    input [7:0] dbgIn,
+    output [7:0] dbgOut
 );
     //metastability input filters
     wire    [ 3:0 ] devide;
@@ -77,7 +80,10 @@ module sm_top
         .dmAddr     ( dmAddr    ),
         .dmWe       ( dmWe      ),
         .dmWData    ( dmWData   ),
-        .dmRData    ( dmRData   )
+        .dmRData    ( dmRData   ),
+
+        .dbgIn      (dbgIn),
+        .dbgOut     (dbgOut)
     );
 
 endmodule

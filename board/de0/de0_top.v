@@ -97,7 +97,13 @@ module de0_top
         .clkEnable  ( clkEnable ),
         .clk        ( clk       ),
         .regAddr    ( regAddr   ),
-        .regData    ( regData   )
+        .regData    ( regData   ),
+
+        .gpioInput (GPIO0_D[7:0]),
+        .gpioOutput (GPIO0_D[15:8]),
+
+        .dbgIn (GPIO0_D[23:16]),
+        .dbgOut (GPIO0_D[31:24]),
     );
 
     //outputs

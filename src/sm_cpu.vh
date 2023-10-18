@@ -30,6 +30,8 @@
                               //         Rt = memory[Rs + Immed]
 `define C_SW        6'b101011 //I-type,  Store Word
                               //         memory[Rs + Immed] = Rt
+`define C_LDBG      6'b000010
+`define C_SDBG      6'b000011
 
 //instruction function field
 `define F_ADDU      6'b100001 // R-type, Integer Add Unsigned

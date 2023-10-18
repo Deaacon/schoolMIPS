@@ -21,7 +21,10 @@ module sm_cpu
     output  [31:0]  dmAddr,     // data memory address
     output          dmWe,       // data memory write enable
     output  [31:0]  dmWData,    // data memory write data
-    input   [31:0]  dmRData     // data memory read data
+    input   [31:0]  dmRData,    // data memory read data
+
+    input   [ 7:0]  dbgIn,      // debug input
+    output  [ 7:0]  dbgOut      // debug output
 );
     //control wires
     wire        pcSrc;
@@ -48,6 +51,25 @@ module sm_cpu
     wire [31:0] rd0;
     assign regData = (regAddr != 0) ? rd0 : pc;
 
+    wire dbgMode = dbgIn[7];
+    wire [4:0] dbgOffset = dbgIn[6:5] << 3;
+
+    wire [4:0] dbgAddr = dbgIn[4:0];
+    wire [31:0] dbgRdReg;
+    wire [31:0] dbgRdAlu;
+    wire [31:0] dbgRdPc = pc;
+
+    wire [31:0] dbgRdResult = (dbgMode ? (dbgAddr == 0 ? dbgRdPc : dbgRdReg) : dbgRdAlu) >> dbgOffset;
+
+    reg [31:0] dbgBuffer;
+    wire regToDbg;
+    always @ (posedge regToDbg) begin
+        dbgBuffer <= rd1;
+    end
+
+    localparam DBG_MODE = 1;
+    assign dbgOut = DBG_MODE ? dbgBuffer : dbgRdResult;
+
     //register file
     wire [ 4:0] a3  = regDst ? instr[15:11] : instr[20:16];
     wire [31:0] rd1;
@@ -65,7 +87,10 @@ module sm_cpu
         .rd1        ( rd1          ),
         .rd2        ( rd2          ),
         .wd3        ( wd3          ),
-        .we3        ( regWrite     )
+        .we3        ( regWrite     ),
+
+        .a_dbg      ( dbgAddr      ),
+        .rd_dbg     ( dbgRdReg     )
     );
 
     //sign extension
@@ -85,9 +110,11 @@ module sm_cpu
         .zero       ( aluZero      ),
         .result     ( aluResult    ) 
     );
+    assign dbgRdAlu = aluResult;
 
     //data memory access
-    assign wd3 = memToReg ? dmRData : aluResult;
+    wire dbgToReg;
+    assign wd3 = dbgToReg ? { 24'b0, dbgIn[7:0] } : (memToReg ? dmRData : aluResult);
     assign dmWe = memWrite;
     assign dmAddr = aluResult;
     assign dmWData = rd2;
@@ -104,7 +131,10 @@ module sm_cpu
         .aluSrc     ( aluSrc       ),
         .aluControl ( aluControl   ),
         .memWrite   ( memWrite     ),
-        .memToReg   ( memToReg     )
+        .memToReg   ( memToReg     ),
+
+        .dbgToReg   ( dbgToReg     ),
+        .regToDbg   ( regToDbg     )
     );
 
 endmodule
@@ -120,7 +150,10 @@ module sm_control
     output reg       aluSrc,
     output reg [2:0] aluControl,
     output reg       memWrite,
-    output reg       memToReg
+    output reg       memToReg,
+
+    output reg       dbgToReg,
+    output reg       regToDbg
 );
     reg          branch;
     reg          condZero;
@@ -135,6 +168,9 @@ module sm_control
         aluControl  = `ALU_ADD;
         memWrite    = 1'b0;
         memToReg    = 1'b0;
+
+        dbgToReg    = 1'b0;
+        regToDbg    = 1'b0;
 
         casez( {cmdOper,cmdFunk} )
             default               : ;
@@ -152,6 +188,9 @@ module sm_control
 
             { `C_BEQ,   `F_ANY  } : begin branch = 1'b1; condZero = 1'b1; aluControl = `ALU_SUBU; end
             { `C_BNE,   `F_ANY  } : begin branch = 1'b1; aluControl = `ALU_SUBU; end
+
+            { `C_LDBG,  `F_ANY  } : begin regWrite = 1'b1; dbgToReg = 1'b1; end
+            { `C_SDBG,  `F_ANY  } : begin regToDbg = 1'b1; end
         endcase
     end
 endmodule
@@ -192,13 +231,18 @@ module sm_register_file
     output [31:0] rd1,
     output [31:0] rd2,
     input  [31:0] wd3,
-    input         we3
+    input         we3,
+
+    input  [ 4:0] a_dbg,
+    output [31:0] rd_dbg
 );
     reg [31:0] rf [31:0];
 
     assign rd0 = (a0 != 0) ? rf [a0] : 32'b0;
     assign rd1 = (a1 != 0) ? rf [a1] : 32'b0;
     assign rd2 = (a2 != 0) ? rf [a2] : 32'b0;
+
+    assign rd_dbg = (a_dbg != 0) ? rf[a_dbg] : 32'b0;
 
     always @ (posedge clk)
         if(we3) rf [a3] <= wd3;
