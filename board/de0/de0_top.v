@@ -89,6 +89,7 @@ module de0_top
     wire [ 31:0 ] regData;
 
     //cores
+    wire [7:0] dbgRaw;
     sm_top sm_top
     (
         .clkIn      ( clkIn     ),
@@ -103,12 +104,14 @@ module de0_top
         .gpioOutput (GPIO0_D[15:8]),
 
         .dbgIn (GPIO0_D[23:16]),
-        .dbgOut (GPIO0_D[31:24]),
+        .dbgOut (dbgRaw),
+        .dbgHexOut0 (GPIO0_D[31:24])
     );
 
     //outputs
-    assign LEDG[0]   = clk;
-    assign LEDG[9:1] = regData[8:0];
+    //assign LEDG[0]   = clk;
+    //assign LEDG[9:1] = regData[8:0];
+    assign LEDG[7:0] = dbgRaw;
 
     wire [ 31:0 ] h7segment = regData;
 

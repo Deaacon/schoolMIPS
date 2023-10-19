@@ -20,7 +20,9 @@ module sm_top
     input                             alsSDO,     // Light Sensor SPI data
 
     input [7:0] dbgIn,
-    output [7:0] dbgOut
+    output [7:0] dbgOut,
+    output [7:0] dbgHexOut0,
+    output [7:0] dbgHexOut1
 );
     //metastability input filters
     wire    [ 3:0 ] devide;
@@ -84,6 +86,20 @@ module sm_top
 
         .dbgIn      (dbgIn),
         .dbgOut     (dbgOut)
+    );
+
+    wire [3:0] digit0 = dbgOut[3:0];
+    wire [3:0] digit1 = dbgOut[7:4];
+
+    sm_hex_display hex_display0
+    (
+        .digit (digit0),
+        .seven_segments (dbgHexOut0)
+    );
+    sm_hex_display hex_display1
+    (
+        .digit (digit1),
+        .seven_segments (dbgHexOut1)
     );
 
 endmodule
