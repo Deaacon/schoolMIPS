@@ -63,11 +63,11 @@ module sm_cpu
 
     reg [31:0] dbgBuffer;
     wire regToDbg;
-    always @ (posedge regToDbg) begin
-        dbgBuffer <= rd1;
+    always @ (posedge clk) begin
+        if (regToDbg) dbgBuffer <= rd1;
     end
 
-    localparam DBG_MODE = 1;
+    localparam DBG_MODE = 0;
     assign dbgOut = DBG_MODE ? dbgBuffer : dbgRdResult;
 
     //register file
