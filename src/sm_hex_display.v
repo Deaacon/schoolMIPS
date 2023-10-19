@@ -69,7 +69,7 @@ module sm_hex_display_8
     begin
         if (! resetn)
         begin
-            seven_segments <=   bcd_to_seg (0);
+            seven_segments <= ~ bcd_to_seg (0);
             dot            <= ~ 0;
             anodes         <= ~ 8'b00000001;
 
@@ -77,7 +77,7 @@ module sm_hex_display_8
         end
         else
         begin
-            seven_segments <=   bcd_to_seg (number [i * 4 +: 4]);
+            seven_segments <= ~ bcd_to_seg (number [i * 4 +: 4]);
             dot            <= ~ 0;
             anodes         <= ~ (1 << i);
 

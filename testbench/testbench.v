@@ -30,7 +30,7 @@ module sm_testbench;
     wire [7:0] dbgOut;
 
     assign gpioInput = 16'h011A;
-    assign dbgIn = 8'b00001001;
+    assign dbgIn = 8'b00000001;
 
     // ***** DUT start ************************
 

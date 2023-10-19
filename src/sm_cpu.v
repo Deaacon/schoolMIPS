@@ -24,7 +24,7 @@ module sm_cpu
     input   [31:0]  dmRData,    // data memory read data
 
     input   [ 7:0]  dbgIn,      // debug input
-    output  [ 7:0]  dbgOut      // debug output
+    output  [15:0]  dbgOut      // debug output
 );
     //control wires
     wire        pcSrc;
@@ -51,24 +51,14 @@ module sm_cpu
     wire [31:0] rd0;
     assign regData = (regAddr != 0) ? rd0 : pc;
 
-    wire dbgMode = dbgIn[7];
-    wire [4:0] dbgOffset = dbgIn[6:5] << 3;
-
-    wire [4:0] dbgAddr = dbgIn[4:0];
-    wire [31:0] dbgRdReg;
-    wire [31:0] dbgRdAlu;
-    wire [31:0] dbgRdPc = pc;
-
-    wire [31:0] dbgRdResult = (dbgMode ? (dbgAddr == 0 ? dbgRdPc : dbgRdReg) : dbgRdAlu) >> dbgOffset;
-
     reg [31:0] dbgBuffer;
     wire regToDbg;
     always @ (posedge clk) begin
         if (regToDbg) dbgBuffer <= rd1;
     end
 
-    localparam DBG_MODE = 0;
-    assign dbgOut = DBG_MODE ? dbgBuffer : dbgRdResult;
+    localparam DBG_MODE = 1;
+    assign dbgOut = DBG_MODE ? dbgBuffer : aluResult;
 
     //register file
     wire [ 4:0] a3  = regDst ? instr[15:11] : instr[20:16];

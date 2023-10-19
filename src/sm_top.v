@@ -20,7 +20,7 @@ module sm_top
     input                             alsSDO,     // Light Sensor SPI data
 
     input [7:0] dbgIn,
-    output [7:0] dbgOut
+    output [15:0] dbgOut
 );
     //metastability input filters
     wire    [ 3:0 ] devide;
