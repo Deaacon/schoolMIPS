@@ -32,6 +32,8 @@ module de10_lite(
     wire [ 31:0 ] regData;
 
     //cores
+    wire [7:0] dbgIn = GPIO[15:8];
+    wire [7:0] dbgOut;
     sm_top sm_top
     (
         .clkIn      ( clkIn     ),
@@ -40,12 +42,16 @@ module de10_lite(
         .clkEnable  ( clkEnable ),
         .clk        ( clk       ),
         .regAddr    ( regAddr   ),
-        .regData    ( regData   )
+        .regData    ( regData   ),
+
+        .dbgIn(dbgIn),
+        .dbgOut(dbgOut)
     );
 
     //outputs
     assign LEDR[0]   = clk;
-    assign LEDR[9:1] = regData[8:0];
+    assign LEDR[8:1] = dbgOut;
+    assign GPIO[7:0] = dbgOut;
 
     wire [ 31:0 ] h7segment = regData;
 
