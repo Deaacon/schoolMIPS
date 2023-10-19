@@ -34,6 +34,7 @@ module de10_lite(
     //cores
     wire [7:0] dbgIn = GPIO[15:8];
     wire [7:0] dbgOut;
+    wire [31:0] dbgRaw = { 24'b0, dbgIn };
     sm_top sm_top
     (
         .clkIn      ( clkIn     ),
@@ -51,7 +52,7 @@ module de10_lite(
     //outputs
     assign LEDR[0]   = clk;
     assign LEDR[8:1] = dbgOut;
-    assign GPIO[7:0] = dbgOut;
+    // assign GPIO[7:0] = dbgOut;
 
     wire [ 31:0 ] h7segment = regData;
 
@@ -68,5 +69,15 @@ module de10_lite(
     sm_hex_display digit_2 ( h7segment [11: 8] , HEX2 [6:0] );
     sm_hex_display digit_1 ( h7segment [ 7: 4] , HEX1 [6:0] );
     sm_hex_display digit_0 ( h7segment [ 3: 0] , HEX0 [6:0] );
+
+    sm_hex_display_8 hex_display
+    (
+        .clock (CLOCK_50),
+        .resetn (KEY[0]),
+        .number (dbgRaw),
+
+        .seven_segments (GPIO0_D[25:19]),
+        .anodes (GPIO0_D[18:15])
+    );
 
 endmodule
