@@ -100,20 +100,19 @@ module de0_top
         .regAddr    ( regAddr   ),
         .regData    ( regData   ),
 
-        .gpioInput (GPIO0_D[7:0]),
-        .gpioOutput (GPIO0_D[15:8]),
+        .gpioInput (GPIO0_D[3:0]),
+        .gpioOutput (GPIO0_D[7:4]),
 
-        .dbgIn (GPIO0_D[23:16]),
+        .dbgIn (GPIO0_D[31:24]),
         .dbgOut (dbgRaw),
-        .dbgHexOut0 (GPIO0_D[31:24])
     );
 
     //outputs
     //assign LEDG[0]   = clk;
     //assign LEDG[9:1] = regData[8:0];
-    assign LEDG[7:0] = dbgRaw;
+    assign LEDG[7:0] = dbgRaw[7:0];
 
-    wire [ 31:0 ] h7segment = regData;
+    wire [ 31:0 ] h7segment = { 24'b0, dbgRaw };
 
     assign HEX0_DP = 1'b1;
     assign HEX0_DP = 1'b1;
@@ -124,5 +123,15 @@ module de0_top
     sm_hex_display digit_2 ( h7segment [11: 8] , HEX2_D [6:0] );
     sm_hex_display digit_1 ( h7segment [ 7: 4] , HEX1_D [6:0] );
     sm_hex_display digit_0 ( h7segment [ 3: 0] , HEX0_D [6:0] );
+
+    sm_hex_display_8 hex_display
+    (
+        .clock (CLOCK_50),
+        .resetn (BUTTON[0]),
+        .number (dbgRaw[7:0]),
+
+        .seven_segments (GPIO0_D[23:18]),
+        .anodes (GPIO0_D[17:14])
+    );
 
 endmodule
