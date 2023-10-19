@@ -76,8 +76,8 @@ module de10_lite(
         .resetn (KEY[0]),
         .number (dbgRaw),
 
-        .seven_segments (GPIO0_D[25:19]),
-        .anodes (GPIO0_D[18:15])
+        .seven_segments (GPIO[25:19]),
+        .anodes (GPIO[18:15])
     );
 
 endmodule
